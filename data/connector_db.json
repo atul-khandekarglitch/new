@@ -140,6 +140,23 @@
         "SS304 offcuts & 6061 billets"
       ],
       "description": "Registered as buyer on Connector."
+    },
+    {
+      "id": "comp_1792854403779",
+      "name": "Tata motors",
+      "industry": "Automotive",
+      "subIndustry": "",
+      "manufacturingProcess": "",
+      "city": "Pune",
+      "state": "Maharashtra",
+      "country": "India",
+      "industrialArea": "Pune Zone",
+      "privacyLevel": "public",
+      "verified": false,
+      "contactEmail": "hdf@h.com",
+      "contactPhone": "986754679",
+      "capabilities": [],
+      "description": "Registered as buyer on Connector."
     }
   ],
   "users": [
@@ -185,6 +202,15 @@
       "role": "buyer",
       "companyId": "comp_1792853467975",
       "createdAt": "2026-10-24T14:51:07.975Z"
+    },
+    {
+      "id": "user_1792854403779",
+      "name": "Ayush",
+      "email": "hdf@h.com",
+      "phone": "986754679",
+      "role": "buyer",
+      "companyId": "comp_1792854403779",
+      "createdAt": "2026-10-24T15:06:43.779Z"
     }
   ],
   "listings": [
@@ -251,7 +277,7 @@
       "estimatedLoadingTime": "1 hour",
       "verificationState": "pending_verification",
       "status": "active",
-      "viewsCount": 2,
+      "viewsCount": 3,
       "enquiriesCount": 1,
       "images": [
         {
@@ -351,7 +377,7 @@
       "estimatedLoadingTime": "1 hour",
       "verificationState": "pending_verification",
       "status": "active",
-      "viewsCount": 2,
+      "viewsCount": 3,
       "enquiriesCount": 1,
       "images": [
         {
@@ -840,7 +866,7 @@
       "estimatedLoadingTime": "20 minutes",
       "verificationState": "pending_verification",
       "status": "active",
-      "viewsCount": 188,
+      "viewsCount": 189,
       "enquiriesCount": 6,
       "images": [
         {
@@ -1157,6 +1183,13 @@
     }
   ],
   "auditLogs": [
+    {
+      "id": "log_1792854403779",
+      "userId": "user_1792854403779",
+      "action": "USER_REGISTERED",
+      "details": "Registered Ayush as buyer for Tata motors",
+      "timestamp": "2026-10-24T15:06:43.779Z"
+    },
     {
       "id": "log_1792853468138",
       "userId": "user_buyer_rajesh",
