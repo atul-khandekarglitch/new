@@ -70,7 +70,7 @@ export default function AuthModal() {
         <div className="bg-gradient-to-r from-navy-900 via-navy-850 to-brand-purple p-6 text-white flex items-center justify-between">
           <div>
             <span className="text-xs font-semibold tracking-wider text-brand-cyan uppercase">Authentication &amp; Access</span>
-            <h2 className="text-2xl font-bold mt-1">What would you like to do on Connector?</h2>
+            <h2 className="text-2xl font-bold mt-1">What would you like to do on Induscycle?</h2>
           </div>
           <button
             onClick={() => setSwitchRoleModalOpen(false)}

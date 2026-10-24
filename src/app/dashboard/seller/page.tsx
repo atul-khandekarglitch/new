@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import { MaterialListing, EnquiryOffer, BuyerRequirement } from "@/types";
+import { MaterialListing, EnquiryOffer, BuyerRequirement, Order } from "@/types";
 import { 
   PlusCircle, 
   Layers, 
@@ -20,7 +20,8 @@ import {
   ShieldCheck,
   Building2,
   Trash2,
-  Edit
+  Edit,
+  FileText
 } from "lucide-react";
 
 export default function SellerDashboardPage() {
@@ -28,7 +29,7 @@ export default function SellerDashboardPage() {
   
   const [listings, setListings] = useState<MaterialListing[]>([]);
   const [enquiries, setEnquiries] = useState<EnquiryOffer[]>([]);
-  const [buyerDemands, setBuyerDemands] = useState<BuyerRequirement[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -40,13 +41,17 @@ export default function SellerDashboardPage() {
     Promise.all([
       fetch("/api/listings?status=all").then((r) => r.json()),
       fetch("/api/enquiries").then((r) => r.json()),
+      fetch("/api/orders").then((r) => r.json()),
     ])
-      .then(([listingsData, enquiriesData]) => {
+      .then(([listingsData, enquiriesData, ordersData]) => {
         if (listingsData.success) {
           setListings(listingsData.listings);
         }
         if (enquiriesData.success) {
           setEnquiries(enquiriesData.enquiries);
+        }
+        if (ordersData.success && ordersData.orders) {
+          setOrders(ordersData.orders);
         }
       })
       .catch((err) => console.error("Seller dashboard error:", err))
@@ -67,7 +72,7 @@ export default function SellerDashboardPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-purple/30 text-purple-300 border border-brand-purple/40 mb-2">
-                Manufacturing Plant Dispatch Console
+                Induscycle Manufacturing Plant Dispatch Console
               </div>
               <h1 className="text-2xl sm:text-3xl font-black">
                 {user?.name || "Anand Verma"} — Seller Workspace
@@ -121,6 +126,76 @@ export default function SellerDashboardPage() {
             <span className="text-xs text-slate-400 font-semibold uppercase">Buyer RFQs &amp; Enquiries</span>
             <div className="text-2xl font-black text-purple-600 mt-1">{enquiries.length || 3}</div>
             <span className="text-[11px] text-slate-500">High purchase interest</span>
+          </div>
+        </div>
+
+        {/* Section: Customer Procurement Orders & Invoices */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div>
+              <h2 className="text-lg font-bold text-navy-950 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-brand-purple" />
+                <span>Customer Orders &amp; Tax Invoices</span>
+              </h2>
+              <p className="text-xs text-slate-500">
+                Confirmed buyer purchase orders, payment verification, and dispatch tax documentation.
+              </p>
+            </div>
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-purple-100 text-brand-purple">
+              {orders.length} Verified Orders
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-y border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Order ID &amp; Date</th>
+                  <th className="py-3 px-3">Buyer Company</th>
+                  <th className="py-3 px-3">Destination Delivery Address</th>
+                  <th className="py-3 px-3">Gross Realization</th>
+                  <th className="py-3 px-3">Payment Status</th>
+                  <th className="py-3 px-4 text-right">Tax Invoice</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+                {orders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-slate-900">{order.id}</div>
+                      <div className="text-[11px] text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-slate-900">{order.buyerCompanyName}</div>
+                      <div className="text-[11px] text-slate-500">Attn: {order.buyerName}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="text-slate-800">{order.buyerAddress || "Bhosari MIDC, Pune, Maharashtra"}</div>
+                      <div className="text-[11px] text-slate-500">Commercial Carrier Assigned</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <strong className="text-emerald-700 text-sm">₹{order.totalAmount.toLocaleString()}</strong>
+                      <div className="text-[10px] text-slate-400">Paid in full</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {order.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <Link
+                        href={`/invoices/${order.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-900 hover:bg-brand-purple text-white font-bold text-xs shadow-sm transition-all"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View Invoice</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

@@ -16,7 +16,10 @@ import {
   Sliders, 
   ShieldCheck,
   Building2,
-  LogOut
+  LogOut,
+  MapPin,
+  FileText,
+  CreditCard
 } from "lucide-react";
 
 interface NavbarProps {
@@ -39,18 +42,18 @@ export default function Navbar({ transparent = false }: NavbarProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
-          {/* Logo & Brand */}
-          <div className="flex items-center gap-8">
+          {/* Logo & Brand (Induscycle Branding) */}
+          <div className="flex items-center gap-6">
             <Link href="/" className="flex items-center gap-2.5 group">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-purple flex items-center justify-center shadow-lg shadow-blue-500/20 group-hover:scale-105 transition-transform">
                 <Layers className="w-5 h-5 text-white" />
               </div>
               <div className="flex flex-col">
                 <span className="text-2xl font-black tracking-tight text-white flex items-center gap-1">
-                  CONNECTOR<span className="w-2 h-2 rounded-full bg-brand-cyan inline-block animate-pulse"></span>
+                  INDUSCYCLE<span className="w-2 h-2 rounded-full bg-brand-cyan inline-block animate-pulse"></span>
                 </span>
-                <span className="text-[10px] uppercase font-bold tracking-widest text-slate-300">
-                  Industrial Exchange
+                <span className="text-[9px] uppercase font-bold tracking-widest text-slate-300">
+                  Industrial Exchange Platform
                 </span>
               </div>
             </Link>
@@ -59,7 +62,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             <nav className="hidden lg:flex items-center space-x-1">
               <Link
                 href="/marketplace"
-                className={`px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
                   pathname === "/marketplace"
                     ? "text-brand-cyan bg-white/10"
                     : "text-slate-200 hover:text-white hover:bg-white/5"
@@ -69,8 +72,19 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               </Link>
 
               <Link
+                href="/cluster-map"
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
+                  pathname === "/cluster-map"
+                    ? "text-brand-cyan bg-white/10"
+                    : "text-slate-200 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                Cluster Map
+              </Link>
+
+              <Link
                 href="/material-flow"
-                className={`px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
                   pathname === "/material-flow"
                     ? "text-brand-cyan bg-white/10"
                     : "text-slate-200 hover:text-white hover:bg-white/5"
@@ -80,19 +94,21 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               </Link>
 
               <Link
-                href="/simulator"
-                className={`px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
-                  pathname === "/simulator"
+                href="/payments"
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors flex items-center gap-1.5 ${
+                  pathname === "/payments"
                     ? "text-brand-cyan bg-white/10"
                     : "text-slate-200 hover:text-white hover:bg-white/5"
                 }`}
               >
-                What-If Simulator
+                <CreditCard className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Payments</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
               </Link>
 
               <Link
                 href="/tracking"
-                className={`px-3.5 py-2 rounded-md text-sm font-medium transition-colors ${
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
                   pathname === "/tracking"
                     ? "text-brand-cyan bg-white/10"
                     : "text-slate-200 hover:text-white hover:bg-white/5"
@@ -101,40 +117,81 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                 Shipment Tracking
               </Link>
 
+              <Link
+                href="/simulator"
+                className={`px-3 py-2 rounded-md text-xs font-semibold transition-colors ${
+                  pathname === "/simulator"
+                    ? "text-brand-cyan bg-white/10"
+                    : "text-slate-200 hover:text-white hover:bg-white/5"
+                }`}
+              >
+                What-If Simulator
+              </Link>
+
               <div className="relative group">
-                <button className="flex items-center gap-1 px-3.5 py-2 rounded-md text-sm font-medium text-slate-200 hover:text-white hover:bg-white/5 transition-colors">
+                <button className="flex items-center gap-1 px-3 py-2 rounded-md text-xs font-semibold text-slate-200 hover:text-white hover:bg-white/5 transition-colors">
                   <span>Platform</span>
-                  <ChevronDown className="w-4 h-4 text-slate-400 group-hover:text-white transition-transform group-hover:rotate-180" />
+                  <ChevronDown className="w-3.5 h-3.5 text-slate-400 group-hover:text-white transition-transform group-hover:rotate-180" />
                 </button>
                 <div className="absolute left-0 mt-2 w-64 rounded-xl bg-navy-900 border border-navy-700 shadow-2xl py-2 hidden group-hover:block backdrop-blur-xl z-50">
                   <Link
                     href="/marketplace"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     <Search className="w-4 h-4 text-brand-cyan" />
                     <div>
                       <div className="font-medium">Intelligent Search</div>
-                      <div className="text-xs text-slate-400">Deterministic metallurgy filters</div>
+                      <div className="text-[11px] text-slate-400">Deterministic metallurgy filters</div>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/cluster-map"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <MapPin className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="font-medium">Industrial Cluster Map</div>
+                      <div className="text-[11px] text-slate-400">Pune, Bengaluru, Chennai corridors</div>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/payments"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <CreditCard className="w-4 h-4 text-emerald-400" />
+                    <div>
+                      <div className="font-medium">Supplier Payments &amp; Invoices</div>
+                      <div className="text-[11px] text-slate-400">Milestones &amp; 3-way matching</div>
+                    </div>
+                  </Link>
+                  <Link
+                    href="/tracking"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                  >
+                    <Truck className="w-4 h-4 text-brand-blue" />
+                    <div>
+                      <div className="font-medium">Live Custody Tracking</div>
+                      <div className="text-[11px] text-slate-400">9-stage simulated logistics</div>
                     </div>
                   </Link>
                   <Link
                     href="/dashboard/buyer"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     <ShieldCheck className="w-4 h-4 text-green-400" />
                     <div>
                       <div className="font-medium">Compatibility Engine</div>
-                      <div className="text-xs text-slate-400">AI-assisted match explanations</div>
+                      <div className="text-[11px] text-slate-400">AI-assisted match explanations</div>
                     </div>
                   </Link>
                   <Link
                     href="/listings/new"
-                    className="flex items-center gap-3 px-4 py-2.5 text-sm text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
+                    className="flex items-center gap-3 px-4 py-2.5 text-xs text-slate-200 hover:bg-white/10 hover:text-white transition-colors"
                   >
                     <PlusCircle className="w-4 h-4 text-brand-purple" />
                     <div>
                       <div className="font-medium">Industrial Listing Suite</div>
-                      <div className="text-xs text-slate-400">Dimensions & multi-image upload</div>
+                      <div className="text-[11px] text-slate-400">Dimensions &amp; multi-image upload</div>
                     </div>
                   </Link>
                 </div>
@@ -184,10 +241,18 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             {/* List Surplus CTA */}
             <Link
               href="/listings/new"
-              className="flex items-center gap-2 px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold transition-all hover:scale-[1.02]"
+              className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-white text-xs font-semibold transition-all hover:scale-[1.02]"
             >
               <PlusCircle className="w-4 h-4 text-brand-cyan" />
               <span>List Surplus</span>
+            </Link>
+
+            {/* Register Link */}
+            <Link
+              href="/register"
+              className="px-3.5 py-2 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition-all"
+            >
+              Join Induscycle
             </Link>
 
             {/* User Profile / Dashboard Menu */}
@@ -195,7 +260,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
               <div className="relative">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-brand-blue to-brand-indigo text-white text-sm font-semibold hover:opacity-95 shadow-md transition-all"
+                  className="flex items-center gap-2 px-3.5 py-2 rounded-lg bg-gradient-to-r from-brand-blue to-brand-indigo text-white text-xs font-semibold hover:opacity-95 shadow-md transition-all"
                 >
                   <UserCircle className="w-4 h-4" />
                   <span>{user.name.split(" ")[0]}</span>
@@ -204,12 +269,12 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
                 {userDropdownOpen && (
                   <div 
-                    className="absolute right-0 mt-2 w-64 rounded-xl bg-navy-900 border border-navy-700 shadow-2xl py-2 z-50 text-slate-200"
+                    className="absolute right-0 mt-2 w-64 rounded-xl bg-navy-900 border border-navy-700 shadow-2xl py-2 z-50 text-slate-200 text-xs"
                     onMouseLeave={() => setUserDropdownOpen(false)}
                   >
                     <div className="px-4 py-3 border-b border-navy-800">
                       <div className="font-semibold text-white text-sm">{user.name}</div>
-                      <div className="text-xs text-slate-400 truncate">{company?.name}</div>
+                      <div className="text-[11px] text-slate-400 truncate">{company?.name}</div>
                       <div className="mt-1.5 inline-block px-2 py-0.5 rounded text-[10px] uppercase font-bold tracking-wider bg-brand-blue/20 text-brand-cyan border border-brand-blue/30">
                         Role: {user.role.toUpperCase()}
                       </div>
@@ -217,43 +282,48 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
                     <Link
                       href={user.role === "seller" ? "/dashboard/seller" : "/dashboard/buyer"}
-                      className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
                       onClick={() => setUserDropdownOpen(false)}
                     >
                       <Building2 className="w-4 h-4 text-brand-cyan" />
                       <span>{user.role === "seller" ? "Seller Dashboard" : "Buyer Dashboard"}</span>
                     </Link>
 
-                    {user.role === "both" && (
-                      <Link
-                        href="/dashboard/seller"
-                        className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
-                        onClick={() => setUserDropdownOpen(false)}
-                      >
-                        <PlusCircle className="w-4 h-4 text-brand-purple" />
-                        <span>Seller Controls</span>
-                      </Link>
-                    )}
+                    <Link
+                      href="/payments"
+                      className="flex items-center gap-2.5 px-4 py-2 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      onClick={() => setUserDropdownOpen(false)}
+                    >
+                      <CreditCard className="w-4 h-4 text-emerald-400" />
+                      <span>Supplier Payments</span>
+                    </Link>
 
                     <Link
                       href="/tracking"
-                      className="flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      className="flex items-center gap-2.5 px-4 py-2 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
                       onClick={() => setUserDropdownOpen(false)}
                     >
                       <Truck className="w-4 h-4 text-emerald-400" />
                       <span>Active Shipments</span>
                     </Link>
 
-                    <button
-                      onClick={() => {
-                        setSwitchRoleModalOpen(true);
-                        setUserDropdownOpen(false);
-                      }}
-                      className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-white/10 text-amber-400 hover:text-amber-300 transition-colors"
+                    <Link
+                      href="/invoices/inv_2026_001"
+                      className="flex items-center gap-2.5 px-4 py-2 hover:bg-white/10 text-slate-200 hover:text-white transition-colors"
+                      onClick={() => setUserDropdownOpen(false)}
+                    >
+                      <FileText className="w-4 h-4 text-amber-400" />
+                      <span>Invoices &amp; Receipts</span>
+                    </Link>
+
+                    <Link
+                      href="/register"
+                      className="flex items-center gap-2.5 px-4 py-2 hover:bg-white/10 text-cyan-300 hover:text-cyan-200 transition-colors"
+                      onClick={() => setUserDropdownOpen(false)}
                     >
                       <Sliders className="w-4 h-4" />
-                      <span>Register New Role</span>
-                    </button>
+                      <span>Switch / Register New Role</span>
+                    </Link>
 
                     <div className="border-t border-navy-800 my-1"></div>
 
@@ -262,7 +332,7 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                         logout();
                         setUserDropdownOpen(false);
                       }}
-                      className="w-full text-left flex items-center gap-2.5 px-4 py-2 text-sm hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors"
+                      className="w-full text-left flex items-center gap-2.5 px-4 py-2 hover:bg-rose-500/20 text-rose-400 hover:text-rose-300 transition-colors"
                     >
                       <LogOut className="w-4 h-4" />
                       <span>Sign Out</span>
@@ -271,12 +341,12 @@ export default function Navbar({ transparent = false }: NavbarProps) {
                 )}
               </div>
             ) : (
-              <button
-                onClick={() => setSwitchRoleModalOpen(true)}
-                className="px-5 py-2 rounded-lg bg-brand-blue hover:bg-blue-600 text-white text-sm font-semibold shadow-md transition-all"
+              <Link
+                href="/register"
+                className="px-5 py-2 rounded-lg bg-brand-blue hover:bg-blue-600 text-white text-xs font-semibold shadow-md transition-all"
               >
-                Sign In
-              </button>
+                Sign In / Join
+              </Link>
             )}
           </div>
 
@@ -309,6 +379,20 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             Marketplace
           </Link>
           <Link
+            href="/cluster-map"
+            className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/10"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Industrial Cluster Map
+          </Link>
+          <Link
+            href="/payments"
+            className="block px-3 py-2 rounded-md text-base font-medium text-emerald-300 hover:bg-white/10 font-semibold"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Payments &amp; Invoices
+          </Link>
+          <Link
             href="/material-flow"
             className="block px-3 py-2 rounded-md text-base font-medium text-slate-200 hover:bg-white/10"
             onClick={() => setMobileMenuOpen(false)}
@@ -328,6 +412,13 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             onClick={() => setMobileMenuOpen(false)}
           >
             Shipment Tracking
+          </Link>
+          <Link
+            href="/register"
+            className="block px-3 py-2 rounded-md text-base font-medium text-cyan-300 hover:bg-white/10 font-semibold"
+            onClick={() => setMobileMenuOpen(false)}
+          >
+            Join Induscycle / Register
           </Link>
           <Link
             href="/listings/new"

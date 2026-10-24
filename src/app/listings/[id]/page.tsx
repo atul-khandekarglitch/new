@@ -192,6 +192,8 @@ export default function ListingDetailPage() {
     }
   };
 
+  const fallbackImage = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><defs><linearGradient id="defaultBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%230f172a"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="accentG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%2338bdf8"/><stop offset="100%" stop-color="%230265ff"/></linearGradient></defs><rect width="600" height="400" fill="url(%23defaultBg)"/><circle cx="300" cy="180" r="70" fill="none" stroke="url(%23accentG)" stroke-width="4" stroke-dasharray="10 8"/><path d="M 270,180 L 330,180 M 300,150 L 300,210" stroke="%2338bdf8" stroke-width="4" stroke-linecap="round"/><text x="300" y="300" fill="%23e2e8f0" font-family="sans-serif" font-weight="bold" font-size="20" text-anchor="middle">INDUSCYCLE CERTIFIED MATERIAL</text><text x="300" y="330" fill="%2394a3b8" font-family="sans-serif" font-size="14" text-anchor="middle">Physical Sample Pending Supplier Photo Upload</text></svg>`;
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col">
       <Navbar />
@@ -228,18 +230,15 @@ export default function ListingDetailPage() {
           {/* Gallery Viewport (Col 1-7) */}
           <div className="lg:col-span-7 space-y-3">
             <div className="relative h-96 w-full rounded-2xl bg-slate-900 border border-slate-200 overflow-hidden shadow-md flex items-center justify-center">
-              {listing.images && listing.images.length > 0 ? (
-                <img
-                  src={listing.images[activeImageIndex]?.storagePath || listing.images[0].storagePath}
-                  alt={listing.title}
-                  className="w-full h-full object-contain"
-                />
-              ) : (
-                <div className="text-slate-500 text-center">
-                  <Layers className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <span className="text-xs">No photograph uploaded</span>
-                </div>
-              )}
+              <img
+                src={
+                  listing.images && listing.images.length > 0
+                    ? listing.images[activeImageIndex]?.storagePath || listing.images[0].storagePath
+                    : fallbackImage
+                }
+                alt={listing.title}
+                className="w-full h-full object-contain"
+              />
 
               {/* Status Badge */}
               <div className="absolute top-4 left-4">
@@ -329,6 +328,14 @@ export default function ListingDetailPage() {
 
               {/* Action Buttons */}
               <div className="space-y-2.5">
+                <Link
+                  href={`/checkout/${listing.id}`}
+                  className="w-full py-3.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm shadow-md transition-all flex items-center justify-center gap-2 hover:scale-[1.01]"
+                >
+                  <DollarSign className="w-4 h-4" />
+                  <span>Instant Procurement &amp; Checkout</span>
+                </Link>
+
                 <button
                   onClick={() => {
                     setEnquiryType("offer");
@@ -925,7 +932,7 @@ export default function ListingDetailPage() {
             ) : (
               <div className="space-y-4 text-xs">
                 <p className="text-slate-600 leading-relaxed">
-                  This supplier operates under Connector&apos;s privacy-preserving protocol. State your commercial purpose and manufacturing requirements to request explicit disclosure of their legal entity, precise factory address, and restricted test reports.
+                  This supplier operates under Induscycle&apos;s privacy-preserving protocol. State your commercial purpose and manufacturing requirements to request explicit disclosure of their legal entity, precise factory address, and restricted test reports.
                 </p>
 
                 <div>

@@ -23,8 +23,11 @@ import {
   RefreshCw,
   Sparkles,
   ChevronRight,
-  ShieldCheck
+  ShieldCheck,
+  Camera
 } from "lucide-react";
+
+const FALLBACK_INDUSTRIAL_PLACEHOLDER = `data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="600" height="400" viewBox="0 0 600 400"><defs><linearGradient id="defaultBg" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%230f172a"/><stop offset="100%" stop-color="%23020617"/></linearGradient><linearGradient id="accentG" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" stop-color="%2338bdf8"/><stop offset="100%" stop-color="%230265ff"/></linearGradient></defs><rect width="600" height="400" fill="url(%23defaultBg)"/><circle cx="300" cy="180" r="70" fill="none" stroke="url(%23accentG)" stroke-width="4" stroke-dasharray="10 8"/><path d="M 270,180 L 330,180 M 300,150 L 300,210" stroke="%2338bdf8" stroke-width="4" stroke-linecap="round"/><text x="300" y="300" fill="%23e2e8f0" font-family="sans-serif" font-weight="bold" font-size="20" text-anchor="middle">INDUSCYCLE CERTIFIED MATERIAL</text><text x="300" y="330" fill="%2394a3b8" font-family="sans-serif" font-size="14" text-anchor="middle">Physical Sample Pending Supplier Photo Upload</text></svg>`;
 
 const CATEGORIES: { label: string; value: string }[] = [
   { label: "All Categories", value: "all" },
@@ -116,6 +119,9 @@ function MarketplaceContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
+              <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-cyan/20 text-cyan-300 border border-brand-cyan/30 mb-2">
+                Induscycle By-Product Exchange
+              </div>
               <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight">
                 Industrial Material Marketplace
               </h1>
@@ -376,11 +382,12 @@ function MarketplaceContent() {
               </div>
             )}
 
-            {/* Product Cards (Section 3 Specification) */}
+            {/* Product Cards (Mandated Specifications) */}
             {!isLoading && listings.length > 0 && (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 {listings.map((item) => {
-                  const primaryImg = item.images && item.images.length > 0 ? item.images[0].storagePath : null;
+                  const hasCustomImage = item.images && item.images.length > 0 && item.images[0].storagePath;
+                  const displayImg = hasCustomImage ? item.images[0].storagePath : FALLBACK_INDUSTRIAL_PLACEHOLDER;
 
                   return (
                     <div
@@ -390,17 +397,18 @@ function MarketplaceContent() {
                       <div>
                         {/* Primary Image Viewport */}
                         <div className="relative h-48 w-full bg-slate-900 overflow-hidden flex items-center justify-center">
-                          {primaryImg ? (
-                            // Render responsive image
-                            <img
-                              src={primaryImg}
-                              alt={item.title}
-                              className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                            />
-                          ) : (
-                            <div className="text-slate-500 flex flex-col items-center gap-2">
-                              <Layers className="w-8 h-8" />
-                              <span className="text-xs">Industrial Material</span>
+                          <img
+                            src={displayImg}
+                            alt={item.title}
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                          />
+
+                          {/* Prompt if listing has no real custom photograph */}
+                          {!hasCustomImage && (
+                            <div className="absolute bottom-2 left-3">
+                              <span className="px-2 py-0.5 rounded text-[10px] font-semibold bg-navy-950/80 text-amber-300 border border-amber-400/30 backdrop-blur-md">
+                                Photo upload requested
+                              </span>
                             </div>
                           )}
 
@@ -488,13 +496,22 @@ function MarketplaceContent() {
                           </div>
                         </div>
 
-                        <Link
-                          href={`/listings/${item.id}`}
-                          className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-brand-blue text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
-                        >
-                          <span>View Details</span>
-                          <ChevronRight className="w-3.5 h-3.5" />
-                        </Link>
+                        <div className="flex items-center gap-2">
+                          <Link
+                            href={`/checkout/${item.id}`}
+                            className="px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1"
+                          >
+                            <span>Buy</span>
+                          </Link>
+
+                          <Link
+                            href={`/listings/${item.id}`}
+                            className="px-4 py-2 rounded-xl bg-slate-900 hover:bg-brand-blue text-white text-xs font-bold transition-all shadow-sm flex items-center gap-1.5"
+                          >
+                            <span>View Details</span>
+                            <ChevronRight className="w-3.5 h-3.5" />
+                          </Link>
+                        </div>
                       </div>
 
                     </div>

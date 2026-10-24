@@ -68,9 +68,9 @@ export default function HomePage() {
                 Turn Industrial By-Products into <span className="text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-sky-200 to-purple-200">Valuable Resources</span>
               </h1>
 
-              {/* Exact Mandated Supporting Text */}
+              {/* Exact Mandated Supporting Text with Induscycle Branding */}
               <p className="text-base sm:text-lg lg:text-xl text-slate-200 max-w-2xl font-normal leading-relaxed">
-                Connector uses intelligent material matching, material-flow analysis, and cost-aware industrial networking to help manufacturers discover reusable materials, reduce waste, and build a more circular supply chain.
+                Induscycle uses intelligent material matching, material-flow analysis, and cost-aware industrial networking to help manufacturers discover reusable materials, reduce waste, and build a more circular supply chain.
               </p>
 
               {/* Action Buttons */}
@@ -262,7 +262,7 @@ export default function HomePage() {
                 Intelligent Material Marketplace
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                Factories produce high-quality offcuts, billet cut-offs, forging flash, and precision chips that traditionally get downcycled or stored indefinitely. Connector gives manufacturers an active marketplace to publish surplus materials with full dimensional, alloy, and condition data, connecting them directly with qualified industrial buyers.
+                Factories produce high-quality offcuts, billet cut-offs, forging flash, and precision chips that traditionally get downcycled or stored indefinitely. Induscycle gives manufacturers an active marketplace to publish surplus materials with full dimensional, alloy, and condition data, connecting them directly with qualified industrial buyers.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -427,7 +427,7 @@ export default function HomePage() {
                 AI-Powered Material Matching
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                Industrial reuse cannot rely on superficial keyword searches. Connector evaluates metallurgical grades, physical dimensions, surface contamination status, mechanical hardness, batch size, buyer manufacturing tolerances, and delivery distance.
+                Industrial reuse cannot rely on superficial keyword searches. Induscycle evaluates metallurgical grades, physical dimensions, surface contamination status, mechanical hardness, batch size, buyer manufacturing tolerances, and delivery distance.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -473,7 +473,7 @@ export default function HomePage() {
                 Material Flow Analysis
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                Transform invisible scrap streams into transparent material balances. Connector maps every stage of manufacturing—showing how virgin raw materials split into prime finished goods, recoverable by-products, recyclable turnings, and disposal fractions.
+                Transform invisible scrap streams into transparent material balances. Induscycle maps every stage of manufacturing—showing how virgin raw materials split into prime finished goods, recoverable by-products, recyclable turnings, and disposal fractions.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -524,7 +524,7 @@ export default function HomePage() {
                   {/* Step 2 */}
                   <div>
                     <div className="flex justify-between mb-1">
-                      <span className="text-cyan-300">Reusable Offcuts &amp; Billet Ends (Connector Recirculation)</span>
+                      <span className="text-cyan-300">Reusable Offcuts &amp; Billet Ends (Induscycle Recirculation)</span>
                       <span className="text-cyan-300 font-bold">2,150 kg (21.5%)</span>
                     </div>
                     <div className="w-full h-3 bg-navy-800 rounded-full overflow-hidden">
@@ -628,7 +628,7 @@ export default function HomePage() {
                 Smarter Industrial Logistics
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                A cheap by-product isn&apos;t cheap if freight, handling, and cleaning exceed savings. Connector calculates total delivered costs—combining material price, haulage rates, loading equipment, sorting, cutting, and lab testing into an honest landed cost per usable unit.
+                A cheap by-product isn&apos;t cheap if freight, handling, and cleaning exceed savings. Induscycle calculates total delivered costs—combining material price, haulage rates, loading equipment, sorting, cutting, and lab testing into an honest landed cost per usable unit.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -674,7 +674,7 @@ export default function HomePage() {
                 Verified Circular Impact
               </h2>
               <p className="text-slate-600 text-base sm:text-lg leading-relaxed">
-                Sustainability claims demand audit trails. Connector links completed consignments, weighbridge receipts, and testing certificates to calculate verified material diversion, Scope 3 emission reductions, and energy savings.
+                Sustainability claims demand audit trails. Induscycle links completed consignments, weighbridge receipts, and testing certificates to calculate verified material diversion, Scope 3 emission reductions, and energy savings.
               </p>
               <div className="space-y-3 pt-2">
                 <div className="flex items-start gap-3">
@@ -751,13 +751,13 @@ export default function HomePage() {
                 <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-brand-blue to-brand-purple flex items-center justify-center">
                   <Layers className="w-4 h-4 text-white" />
                 </div>
-                <span className="text-xl font-black text-white tracking-tight">CONNECTOR</span>
+                <span className="text-xl font-black text-white tracking-tight">INDUSCYCLE</span>
               </div>
               <p className="text-sm text-slate-400 max-w-sm leading-relaxed">
                 The industrial circular network turning factory by-products, machining chips, billet cuts, and sheet offcuts into verified secondary manufacturing feedstocks.
               </p>
               <div className="text-xs text-slate-500">
-                © {new Date().getFullYear()} Connector Platform. All rights reserved.
+                © {new Date().getFullYear()} Induscycle Platform. All rights reserved.
               </div>
             </div>
 
@@ -765,6 +765,7 @@ export default function HomePage() {
               <h4 className="font-bold text-white text-sm mb-3">Platform</h4>
               <ul className="space-y-2 text-sm text-slate-400">
                 <li><Link href="/marketplace" className="hover:text-white">Material Marketplace</Link></li>
+                <li><Link href="/cluster-map" className="hover:text-white">Industrial Cluster Map</Link></li>
                 <li><Link href="/material-flow" className="hover:text-white">Material Flow Analysis</Link></li>
                 <li><Link href="/simulator" className="hover:text-white">Cost &amp; Profit Simulator</Link></li>
                 <li><Link href="/tracking" className="hover:text-white">Shipment Tracking</Link></li>
@@ -774,6 +775,7 @@ export default function HomePage() {
             <div>
               <h4 className="font-bold text-white text-sm mb-3">Listing &amp; Roles</h4>
               <ul className="space-y-2 text-sm text-slate-400">
+                <li><Link href="/register" className="hover:text-white">Join Induscycle</Link></li>
                 <li><Link href="/listings/new" className="hover:text-white">List Your Surplus</Link></li>
                 <li><Link href="/dashboard/buyer" className="hover:text-white">Buyer Dashboard</Link></li>
                 <li><Link href="/dashboard/seller" className="hover:text-white">Seller Dashboard</Link></li>

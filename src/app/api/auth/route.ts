@@ -92,7 +92,7 @@ export async function POST(req: NextRequest) {
         contactEmail: businessEmail,
         contactPhone: phoneNumber,
         capabilities: materialsGenerated ? [materialsGenerated] : requiredMaterials ? [requiredMaterials] : [],
-        description: `Registered as ${role} on Connector.`,
+        description: `Registered as ${role} on Induscycle.`,
       };
 
       const newUser: User = {

@@ -27,20 +27,35 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     }
 
     const shipment = db.shipments[index];
+    const nowIso = new Date().toISOString();
 
-    // Check if user requested step to next stage (for demo simulation)
-    if (body.action === "step_forward") {
+    if (body.action === "reset") {
+      shipment.currentStage = 1;
+      shipment.receiptConditionConfirmed = undefined;
+      shipment.timeline = shipment.timeline.map((evt, idx) => ({
+        ...evt,
+        completed: idx === 0,
+        timestamp: idx === 0 ? nowIso : "Pending",
+      }));
+      if (shipment.gpsStatus) {
+        shipment.gpsStatus.routeProgressPercent = 5;
+        shipment.gpsStatus.simulatedSpeedKmh = 0;
+        shipment.gpsStatus.transponderStatus = "STANDBY";
+        shipment.gpsStatus.lastPingTimestamp = nowIso;
+      }
+    } else if (body.action === "step_forward") {
       const nextStage = Math.min(9, shipment.currentStage + 1) as ShipmentStageNumber;
       shipment.currentStage = nextStage;
 
       // Mark timeline up to nextStage as completed
-      const now = new Date().toISOString();
       shipment.timeline = shipment.timeline.map((evt) => {
         if (evt.stage <= nextStage) {
           return {
             ...evt,
             completed: true,
-            timestamp: evt.completed ? evt.timestamp : now,
+            timestamp: evt.completed ? evt.timestamp : nowIso,
+            operator: evt.operator || (nextStage >= 7 ? "Faridabad Receiver Security & QA" : "Logistics Hub Dispatcher"),
+            source: evt.source || (nextStage === 4 ? "Simulated GPS" : "Operator Verification"),
           };
         }
         return evt;
@@ -49,6 +64,17 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       // Update mock coordinates along route
       if (nextStage === 5) shipment.currentCoordinates = { lat: 27.1767, lng: 77.0369 }; // Agra / NCR
       if (nextStage >= 7) shipment.currentCoordinates = { lat: 28.4089, lng: 77.3178 }; // Faridabad destination
+
+      const progressMap: Record<number, number> = {
+        1: 5, 2: 15, 3: 25, 4: 58, 5: 75, 6: 88, 7: 95, 8: 98, 9: 100
+      };
+
+      if (shipment.gpsStatus) {
+        shipment.gpsStatus.routeProgressPercent = progressMap[nextStage] || 50;
+        shipment.gpsStatus.simulatedSpeedKmh = nextStage >= 7 ? 0 : (nextStage === 4 ? 54 : 38);
+        shipment.gpsStatus.transponderStatus = nextStage >= 7 ? "STANDBY" : "ACTIVE_ONLINE";
+        shipment.gpsStatus.lastPingTimestamp = nowIso;
+      }
 
       if (nextStage === 9) {
         shipment.receiptConditionConfirmed = "accepted_good";
@@ -64,6 +90,11 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
       shipment.receiptQuantityConfirmed = body.receiptQuantityConfirmed || shipment.receiptQuantityConfirmed;
       if (body.receiptConditionConfirmed === "accepted_good") {
         shipment.currentStage = 9;
+        if (shipment.gpsStatus) {
+          shipment.gpsStatus.routeProgressPercent = 100;
+          shipment.gpsStatus.simulatedSpeedKmh = 0;
+          shipment.gpsStatus.transponderStatus = "STANDBY";
+        }
       }
     }
 

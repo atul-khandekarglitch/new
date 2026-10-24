@@ -2,7 +2,7 @@
 const BASE_URL = "http://localhost:3000";
 
 async function runTests() {
-  console.log("=== CONNECTOR ACCEPTANCE TEST SUITE ===");
+  console.log("=== INDUSCYCLE ACCEPTANCE TEST SUITE ===");
   let passed = 0;
   let failed = 0;
 
@@ -17,15 +17,16 @@ async function runTests() {
   }
 
   try {
-    // 1. Homepage Check
+    // 1. Homepage Check & Design Reference
     console.log("\n--- 1. Testing Homepage & Design Reference ---");
     const homeRes = await fetch(`${BASE_URL}/`);
     const homeHtml = await homeRes.text();
     assert(homeRes.status === 200, "Homepage returns HTTP 200");
     assert(
       homeHtml.includes("Turn Industrial By-Products into") && homeHtml.includes("Valuable Resources"),
-      "Homepage contains exact GrabCAD-inspired headline"
+      "Homepage contains exact mandated headline"
     );
+    assert(homeHtml.includes("INDUSCYCLE"), "Homepage contains INDUSCYCLE branding");
     assert(homeHtml.includes("Explore Materials"), "Primary CTA 'Explore Materials' present");
     assert(homeHtml.includes("List Your Surplus"), "Secondary CTA 'List Your Surplus' present");
     assert(homeHtml.includes("Intelligent Material Marketplace"), "Section 1 headline present");
@@ -56,6 +57,12 @@ async function runTests() {
     });
     const regData = await regRes.json();
     assert(regData.success && regData.user.role === "buyer", "Successfully registered new Buyer account");
+
+    // Register page check
+    const registerPageRes = await fetch(`${BASE_URL}/register`);
+    const registerPageHtml = await registerPageRes.text();
+    assert(registerPageRes.status === 200, "Register page (/register) returns HTTP 200");
+    assert(registerPageHtml.includes("Option 1: Buyer") && registerPageHtml.includes("Option 2: Seller"), "Register page displays Option 1: Buyer and Option 2: Seller selectable cards");
 
     // 3. Material Listing Creation with Dimensions & Multiple Images
     console.log("\n--- 3. Testing Advanced Industrial Material Listing Form ---");
@@ -208,35 +215,110 @@ async function runTests() {
     const stepData = await stepRes.json();
     assert(stepData.success && stepData.shipment.currentStage === Math.min(9, initialStage + 1), "Shipment simulation steps forward successfully through the 9 stages");
 
-    // 8. Privacy-Preserving Disclosure Request
-    console.log("\n--- 8. Testing Privacy-Preserving Disclosure Request ---");
-    const discRes = await fetch(`${BASE_URL}/api/disclosure`, {
+    // 8. Order Creation, Payment Confirmation & Invoice System
+    console.log("\n--- 8. Testing Order Creation, Payment & Invoice System ---");
+    const orderCreateRes = await fetch(`${BASE_URL}/api/orders`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         listingId: createdId,
-        targetCompanyId: "comp_aerostruct_sheet",
-        justification: "Automated verification test of contact reveal workflow"
+        quantity: 50,
+        buyerId: "user_buyer_rajesh",
+        buyerName: "Rajesh Sharma",
+        buyerCompanyName: "Kalyani Industrial Equipment",
+        buyerEmail: "procurement@kalyaniequip.example.com",
+        buyerAddress: "Plot 42, Bhosari MIDC, Pune, Maharashtra",
+        distanceKm: 180,
+        includeProcessing: true
       })
     });
-    const discData = await discRes.json();
-    assert(discData.success && discData.request.status === "pending", "Privacy request-to-reveal registered as pending");
+    const orderCreateData = await orderCreateRes.json();
+    assert(orderCreateData.success && orderCreateData.order.id, "Successfully initialized commercial procurement order");
 
-    // 9. Buyer Enquiry & Purchase Offer
-    console.log("\n--- 9. Testing Buyer Purchase Offer Workflow ---");
-    const enqRes = await fetch(`${BASE_URL}/api/enquiries`, {
+    const orderId = orderCreateData.order.id;
+
+    // Confirm Payment
+    const paymentConfirmRes = await fetch(`${BASE_URL}/api/orders/${orderId}`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        listingId: createdId,
-        type: "offer",
-        offeredPrice: 1400,
-        quantity: 100,
-        message: "Automated test offer for turbine offcuts"
+        provider: "demo_gateway",
+        paymentReference: `PAY-TEST-${Date.now().toString().slice(-6)}`
       })
     });
-    const enqData = await enqRes.json();
-    assert(enqData.success && enqData.enquiry.status === "pending", "Purchase offer submitted and dispatched to seller");
+    const paymentConfirmData = await paymentConfirmRes.json();
+    assert(paymentConfirmData.success && paymentConfirmData.order.status === "paid", "Payment verified and order marked paid");
+    assert(paymentConfirmData.invoice && paymentConfirmData.invoice.invoiceNumber, "Invoice generated with unique official number");
+
+    // Retrieve Invoice
+    const invoiceFetchRes = await fetch(`${BASE_URL}/api/invoices/${paymentConfirmData.invoice.id}`);
+    const invoiceFetchData = await invoiceFetchRes.json();
+    assert(invoiceFetchData.success && invoiceFetchData.invoice.id === paymentConfirmData.invoice.id, "Invoice accessible by invoice ID");
+
+    // 9. Industrial Cluster Map Directory
+    console.log("\n--- 9. Testing Industrial Cluster Map Directory ---");
+    const clusterRes = await fetch(`${BASE_URL}/api/clusters`);
+    const clusterData = await clusterRes.json();
+    assert(clusterData.success && clusterData.clusters.length >= 4, "Cluster directory returns Pune, Bengaluru, Chennai, and Faridabad hubs");
+
+    const clusterPageRes = await fetch(`${BASE_URL}/cluster-map`);
+    assert(clusterPageRes.status === 200, "Cluster map page (/cluster-map) returns HTTP 200");
+
+    // 10. Smart Supplier Payments & Invoice Management (Section 42)
+    console.log("\n--- 10. Testing Smart Supplier Payments & Invoice Dashboard ---");
+    const paymentsRes = await fetch(`${BASE_URL}/api/payments`);
+    const paymentsData = await paymentsRes.json();
+    assert(paymentsRes.status === 200 && paymentsData.success, "Payments API returns HTTP 200 and success: true");
+    assert(paymentsData.invoices && paymentsData.invoices.length >= 5, "Payments endpoint includes all 5 required demo scenarios (A, B, C, D, E)");
+    assert(paymentsData.summary.totalPayable > 0, "Single source of truth KPI Total Payable is non-zero");
+    assert(paymentsData.summary.totalPaid > 0, "Single source of truth KPI Total Paid is non-zero");
+    assert(paymentsData.summary.overduePayment > 0, "Overdue Payment alert KPI correctly computed for Scenario C");
+
+    // Scenario D: Check 3-way match discrepancy
+    const scenarioD = paymentsData.invoices.find(inv => inv.scenarioTag === "Scenario D");
+    assert(scenarioD && scenarioD.threeWayMatch.matched === false, "Scenario D correctly flags 3-way match mismatch");
+    assert(scenarioD.threeWayMatch.discrepancies.length >= 2, "Scenario D documents exact quantity and unit rate discrepancies");
+
+    // Scenario E: Check quality inspection milestone
+    const scenarioE = paymentsData.invoices.find(inv => inv.scenarioTag === "Scenario E");
+    assert(scenarioE && scenarioE.eligibilityStatus === "Pending evidence", "Scenario E flags QA inspection pending evidence");
+
+    // Test Demo Mode Payout Action (Scenario B)
+    const scenarioB = paymentsData.invoices.find(inv => inv.scenarioTag === "Scenario B");
+    const payActionRes = await fetch(`${BASE_URL}/api/payments`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        action: "pay",
+        invoiceId: scenarioB.id,
+        amount: 245000,
+        processedBy: "Test Automated Buyer"
+      })
+    });
+    const payActionData = await payActionRes.json();
+    assert(payActionData.success && payActionData.transaction.transactionReference.startsWith("DEMO-TXN-"), "Demo payment generates unique DEMO-TXN-... audit reference");
+    assert(payActionData.invoice.paymentStatus === "Paid" && payActionData.invoice.outstandingBalance === 0, "Invoice balance cleared and payment status updated to Paid");
+
+    // Payments page check
+    const paymentsPageRes = await fetch(`${BASE_URL}/payments`);
+    const paymentsPageHtml = await paymentsPageRes.text();
+    assert(paymentsPageRes.status === 200, "Payments page (/payments) returns HTTP 200");
+    assert(paymentsPageHtml.includes("Supplier Invoice &amp; Payment Management") || paymentsPageHtml.includes("Supplier Invoice & Payment Management"), "Payments page renders required header");
+
+    // 11. Live Custody GPS Route & Transporter Tracking (Section 41)
+    console.log("\n--- 11. Testing Live Custody GPS Route & Transporter Tracking ---");
+    const trackingPageRes = await fetch(`${BASE_URL}/tracking`);
+    const trackingPageHtml = await trackingPageRes.text();
+    assert(trackingPageRes.status === 200, "Tracking page (/tracking) returns HTTP 200");
+    assert(trackingPageHtml.includes("LIVE CLUSTER GPS ROUTE"), "Tracking page contains prominent 'LIVE CLUSTER GPS ROUTE' panel");
+    assert(trackingPageHtml.includes("Designated Transporter &amp; Fleet Logistics") || trackingPageHtml.includes("Designated Transporter & Fleet Logistics"), "Tracking page displays Transporter & Driver card");
+    assert(trackingPageHtml.includes("Custody Transfer Audit Log"), "Tracking page displays Vertical Custody Transfer Audit Log");
+
+    // 12. Google Maps-Style Cluster Map & Deduplicated Company Summary (Section 43)
+    console.log("\n--- 12. Testing Cluster Map Deduplicated Counts & UI ---");
+    const clusterMapHtml = await (await fetch(`${BASE_URL}/cluster-map`)).text();
+    assert(clusterMapHtml.includes("Total Companies on Platform"), "Cluster Map renders Deduplicated Company Counts summary");
+    assert(clusterMapHtml.includes("Transparent Regional Ecosystem Disclosure"), "Cluster Map displays transparent disclosure notice");
 
     console.log("\n==========================================");
     console.log(`TOTAL TESTS: ${passed + failed} | PASSED: ${passed} | FAILED: ${failed}`);

@@ -5,7 +5,7 @@ import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
 import { useAuth } from "@/context/AuthContext";
-import { MaterialListing, Shipment, EnquiryOffer } from "@/types";
+import { MaterialListing, Shipment, EnquiryOffer, Order } from "@/types";
 import { 
   Search, 
   ShoppingCart, 
@@ -20,7 +20,9 @@ import {
   DollarSign,
   Building2,
   Bookmark,
-  Bell
+  Bell,
+  Download,
+  ExternalLink
 } from "lucide-react";
 
 export default function BuyerDashboardPage() {
@@ -29,6 +31,7 @@ export default function BuyerDashboardPage() {
   const [recommendations, setRecommendations] = useState<MaterialListing[]>([]);
   const [activeShipment, setActiveShipment] = useState<Shipment | null>(null);
   const [enquiries, setEnquiries] = useState<EnquiryOffer[]>([]);
+  const [orders, setOrders] = useState<Order[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -41,8 +44,9 @@ export default function BuyerDashboardPage() {
       fetch("/api/listings?status=active").then((r) => r.json()),
       fetch("/api/shipments").then((r) => r.json()),
       fetch("/api/enquiries").then((r) => r.json()),
+      fetch("/api/orders").then((r) => r.json()),
     ])
-      .then(([listingsData, shipmentsData, enquiriesData]) => {
+      .then(([listingsData, shipmentsData, enquiriesData, ordersData]) => {
         if (listingsData.success) {
           setRecommendations(listingsData.listings.slice(0, 3));
         }
@@ -51,6 +55,9 @@ export default function BuyerDashboardPage() {
         }
         if (enquiriesData.success) {
           setEnquiries(enquiriesData.enquiries);
+        }
+        if (ordersData.success && ordersData.orders) {
+          setOrders(ordersData.orders);
         }
       })
       .catch((err) => console.error("Buyer dashboard load error:", err))
@@ -68,7 +75,7 @@ export default function BuyerDashboardPage() {
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
               <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-brand-blue/30 text-brand-cyan border border-brand-blue/40 mb-2">
-                Buyer Procurement Workspace
+                Induscycle Buyer Procurement Workspace
               </div>
               <h1 className="text-2xl sm:text-3xl font-black">
                 Welcome, {user?.name || "Rajesh Sharma"}
@@ -125,6 +132,76 @@ export default function BuyerDashboardPage() {
             <span className="text-xs text-slate-400 font-semibold uppercase">Verified Traceability</span>
             <div className="text-2xl font-black text-indigo-600 mt-1">100% MTR</div>
             <span className="text-[11px] text-slate-500">Certified heat analyses</span>
+          </div>
+        </div>
+
+        {/* Section: Orders & Verified Tax Invoices */}
+        <div className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm space-y-4">
+          <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+            <div>
+              <h2 className="text-lg font-bold text-navy-950 flex items-center gap-2">
+                <FileText className="w-5 h-5 text-emerald-600" />
+                <span>Orders &amp; Tax Invoices</span>
+              </h2>
+              <p className="text-xs text-slate-500">
+                Official procurement orders, verified payment confirmations, and downloadable GST tax invoices.
+              </p>
+            </div>
+            <span className="px-2.5 py-1 rounded-full text-xs font-bold bg-emerald-100 text-emerald-800">
+              {orders.length} Completed Orders
+            </span>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs">
+              <thead className="bg-slate-50 text-slate-500 uppercase tracking-wider text-[10px] font-bold border-y border-slate-200">
+                <tr>
+                  <th className="py-3 px-4">Order ID &amp; Date</th>
+                  <th className="py-3 px-3">Supplier Company</th>
+                  <th className="py-3 px-3">Delivery Destination</th>
+                  <th className="py-3 px-3">Amount (inc. GST)</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-4 text-right">Invoice &amp; Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-slate-700 font-medium">
+                {orders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/70 transition-colors">
+                    <td className="py-3.5 px-4">
+                      <div className="font-bold text-slate-900">{order.id}</div>
+                      <div className="text-[11px] text-slate-400">{new Date(order.createdAt).toLocaleDateString()}</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="font-semibold text-slate-900">{order.sellerCompanyName}</div>
+                      <div className="text-[11px] text-slate-500">Ex-Factory Dispatch</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <div className="text-slate-800">{order.buyerAddress || "Bhosari MIDC, Pune, Maharashtra"}</div>
+                      <div className="text-[11px] text-slate-500">Commercial Flatbed</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <strong className="text-emerald-700 text-sm">₹{order.totalAmount.toLocaleString()}</strong>
+                      <div className="text-[10px] text-slate-400">18% GST Paid</div>
+                    </td>
+                    <td className="py-3 px-3">
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800 inline-flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        {order.status.toUpperCase()}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4 text-right">
+                      <Link
+                        href={`/invoices/${order.id}`}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition-all hover:scale-[1.02]"
+                      >
+                        <FileText className="w-3.5 h-3.5" />
+                        <span>View Tax Invoice</span>
+                      </Link>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
         </div>
 

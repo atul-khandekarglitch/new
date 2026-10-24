@@ -158,11 +158,11 @@ export default function MaterialFlowPage() {
               <div className="p-4 rounded-xl bg-blue-950/80 border border-blue-700/80 space-y-2">
                 <div className="flex items-center justify-between">
                   <span className="font-bold text-cyan-300">Reusable Offcuts</span>
-                  <span className="text-[10px] px-2 py-0.5 rounded bg-blue-900 text-cyan-200">Connector Loop</span>
+                  <span className="text-[10px] px-2 py-0.5 rounded bg-blue-900 text-cyan-200">Induscycle Loop</span>
                 </div>
                 <div className="text-sm font-bold text-white">{current.reusableFlash}</div>
                 <p className="text-[11px] text-slate-400 font-sans">
-                  Published on Connector for secondary stamping and precision blanking.
+                  Published on Induscycle for secondary stamping and precision blanking.
                 </p>
               </div>
 
@@ -210,7 +210,7 @@ export default function MaterialFlowPage() {
           {/* Action CTA */}
           <div className="pt-2 flex justify-between items-center text-xs">
             <span className="text-slate-500">
-              Diagnostic data generated from Connector&apos;s verified material balances.
+              Diagnostic data generated from Induscycle&apos;s verified material balances.
             </span>
             <Link
               href="/marketplace"
