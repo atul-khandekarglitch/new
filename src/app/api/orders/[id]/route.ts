@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { Invoice, Payment } from "@/types";
+import { notifyOrderPaid, notifyOrderStatusChanged } from "@/lib/email";
 
 export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
@@ -155,6 +156,9 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
 
     saveDatabase(db);
 
+    // Automatic email notification to Buyer & Seller with official Tax Invoice (non-blocking)
+    notifyOrderPaid(order, newInvoice).catch((e) => console.warn("Order payment email notification notice:", e));
+
     return NextResponse.json({
       success: true,
       message: "Payment successfully verified and invoice generated",
@@ -164,5 +168,46 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
   } catch (error) {
     console.error("POST /api/orders/[id] error:", error);
     return NextResponse.json({ success: false, error: "Payment verification failed" }, { status: 500 });
+  }
+}
+
+
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const db = getDatabase();
+    const orderId = params.id;
+    const body = await req.json();
+    const { status, reason } = body;
+
+    const orderIndex = (db.orders || []).findIndex((o) => o.id === orderId);
+    if (orderIndex === -1) {
+      return NextResponse.json({ success: false, error: "Order not found" }, { status: 404 });
+    }
+
+    const order = db.orders[orderIndex];
+    if (status) {
+      order.status = status;
+    }
+    order.updatedAt = new Date().toISOString();
+    db.orders[orderIndex] = order;
+
+    db.auditLogs.unshift({
+      id: `log_${Date.now()}`,
+      userId: order.sellerId || "sys_seller",
+      action: `ORDER_${(status || 'updated').toUpperCase()}`,
+      details: `Order ${order.id} status updated to ${status}${reason ? `. Reason: ${reason}` : ''}`,
+      timestamp: new Date().toISOString(),
+    });
+
+    saveDatabase(db);
+
+    if (status) {
+      notifyOrderStatusChanged(order, status, reason).catch((e) => console.warn("Order status change notice:", e));
+    }
+
+    return NextResponse.json({ success: true, order });
+  } catch (error) {
+    console.error("PUT /api/orders/[id] error:", error);
+    return NextResponse.json({ success: false, error: "Failed to update order status" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { EnquiryOffer } from "@/types";
+import { notifyEnquiryOfferCreated } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -50,6 +51,9 @@ export async function POST(req: NextRequest) {
     }
 
     saveDatabase(db);
+
+    // Automatic notification to Seller and confirmation to Buyer (non-blocking)
+    notifyEnquiryOfferCreated(newEnquiry).catch((e) => console.warn("Enquiry offer email notice:", e));
 
     return NextResponse.json({ success: true, enquiry: newEnquiry });
   } catch (error) {

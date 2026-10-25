@@ -1,3 +1,4 @@
+import { notifySupplierInvoiceAction } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { SupplierInvoice, PaymentTransaction } from "@/types";
@@ -91,6 +92,9 @@ export async function POST(req: NextRequest) {
         timestamp: nowIso,
       });
 
+      // Email notification to Supplier
+      notifySupplierInvoiceAction(invoice, "approved").catch((e) => console.warn("Invoice approval notice:", e));
+
     } else if (action === "reject") {
       if (!rejectionReason || !rejectionReason.trim()) {
         return NextResponse.json({ success: false, error: "Rejection reason is mandatory" }, { status: 400 });
@@ -109,6 +113,9 @@ export async function POST(req: NextRequest) {
         timestamp: nowIso,
       });
 
+      // Email notification to Supplier
+      notifySupplierInvoiceAction(invoice, "rejected", { reason: rejectionReason.trim() }).catch((e) => console.warn("Invoice rejection notice:", e));
+
     } else if (action === "clarification") {
       if (!clarificationQuery || !clarificationQuery.trim()) {
         return NextResponse.json({ success: false, error: "Clarification query is mandatory" }, { status: 400 });
@@ -126,6 +133,9 @@ export async function POST(req: NextRequest) {
         details: `Requested clarification on ${invoice.invoiceNumber}: ${clarificationQuery}`,
         timestamp: nowIso,
       });
+
+      // Email notification to Supplier
+      notifySupplierInvoiceAction(invoice, "clarification", { query: clarificationQuery.trim() }).catch((e) => console.warn("Invoice clarification notice:", e));
 
     } else if (action === "pay") {
       const payAmount = typeof amount === "number" && amount > 0 ? amount : invoice.outstandingBalance;
@@ -174,6 +184,9 @@ export async function POST(req: NextRequest) {
         details: `Released payment ₹${payAmount.toLocaleString("en-IN")} for ${invoice.invoiceNumber}. Ref: ${txnRef}`,
         timestamp: nowIso,
       });
+
+      // Email notification to Supplier
+      notifySupplierInvoiceAction(invoice, "pay", { amount: payAmount, txnRef }).catch((e) => console.warn("Invoice payment notice:", e));
 
       db.supplierInvoices[index] = invoice;
       saveDatabase(db);

@@ -583,3 +583,51 @@ export interface SupplierInvoice {
   createdAt: string;
   updatedAt: string;
 }
+
+export type EmailEventType =
+  | 'user_registration'
+  | 'order_placed'
+  | 'order_paid'
+  | 'order_status_update'
+  | 'shipment_update'
+  | 'invoice_approval'
+  | 'invoice_rejection'
+  | 'invoice_clarification'
+  | 'invoice_payment'
+  | 'disclosure_request'
+  | 'disclosure_status'
+  | 'enquiry_offer'
+  | 'admin_alert';
+
+export interface EmailNotification {
+  id: string;
+  idempotencyKey: string;
+  to: string;
+  from: string;
+  subject: string;
+  title?: string;
+  message?: string;
+  link?: string;
+  read?: boolean;
+  userId?: string;
+  eventType: EmailEventType;
+  referenceId?: string;
+  status: 'sent' | 'failed' | 'simulated_pending_credentials';
+  messageId?: string;
+  error?: string;
+  sentAt: string;
+  metadata?: Record<string, any>;
+}
+
+export interface InAppNotification {
+  id: string;
+  userId: string;
+  title: string;
+  message: string;
+  eventType: EmailEventType;
+  referenceId?: string;
+  link?: string;
+  read: boolean;
+  createdAt: string;
+  metadata?: Record<string, any>;
+}

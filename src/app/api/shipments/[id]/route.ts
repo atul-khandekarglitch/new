@@ -1,3 +1,4 @@
+import { notifyShipmentProgression } from "@/lib/email";
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { ShipmentStageNumber } from "@/types";
@@ -100,6 +101,22 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     db.shipments[index] = shipment;
     saveDatabase(db);
+
+    // Automatic email notification on progression or receipt
+    if (body.action === "step_forward") {
+      const stageEvt = shipment.timeline.find(t => t.stage === shipment.currentStage);
+      notifyShipmentProgression(shipment, {
+        stage: shipment.currentStage,
+        stageName: stageEvt ? stageEvt.stageName : "Stage " + shipment.currentStage,
+        location: stageEvt && stageEvt.location ? stageEvt.location : (shipment.currentStage >= 7 ? shipment.destination : "Industrial Transit Corridor"),
+      }).catch((e) => console.warn("Shipment progression notification notice:", e));
+    } else if (body.receiptConditionConfirmed) {
+      notifyShipmentProgression(shipment, {
+        stage: 9,
+        stageName: "Receipt Confirmed & Consignment Accepted",
+        location: shipment.destination,
+      }).catch((e) => console.warn("Receipt confirmation notification notice:", e));
+    }
 
     return NextResponse.json({ success: true, shipment });
   } catch (error) {

@@ -59,3 +59,14 @@ body {
     height: 120px;
   }
 }
+
+/* Role Transition & Reduced Motion Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .role-indicator-pill {
+    transition: none !important;
+  }
+  .role-transition-element {
+    transition: opacity 150ms ease-in-out !important;
+    transform: none !important;
+  }
+}

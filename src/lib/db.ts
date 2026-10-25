@@ -17,7 +17,8 @@ import {
   SupplierInvoice,
   PaymentMilestone,
   PaymentTransaction,
-  ThreeWayMatch
+  ThreeWayMatch,
+  EmailNotification
 } from '@/types';
 
 export interface DatabaseSchema {
@@ -42,6 +43,7 @@ export interface DatabaseSchema {
     details: string;
     timestamp: string;
   }[];
+  notifications?: EmailNotification[];
 }
 
 const DB_DIR = path.join(process.cwd(), 'data');
@@ -1524,7 +1526,8 @@ const INITIAL_DATA: DatabaseSchema = {
       details: "Payment confirmed for Order ord_2026_001. Generated Invoice INV-2026-8801.",
       timestamp: "2026-10-23T16:15:00Z"
     }
-  ]
+  ],
+  notifications: []
 };
 
 // Singleton in-memory cache synchronized with disk
@@ -1567,6 +1570,9 @@ export function getDatabase(): DatabaseSchema {
     });
     if (!cachedDb!.supplierInvoices || cachedDb!.supplierInvoices.length === 0) {
       cachedDb!.supplierInvoices = INITIAL_DATA.supplierInvoices;
+    }
+    if (!cachedDb!.notifications) {
+      cachedDb!.notifications = [];
     }
 
     return cachedDb!;

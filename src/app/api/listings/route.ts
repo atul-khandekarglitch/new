@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { MaterialListing } from "@/types";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
 
 export async function GET(req: NextRequest) {
   try {
@@ -233,6 +234,27 @@ export async function POST(req: NextRequest) {
 
     db.listings.unshift(newListing);
 
+    // Notification for supplier when listing is published
+    if (!db.notifications) db.notifications = [];
+    const supplierCompany = db.companies.find((c) => c.id === newListing.supplierCompanyId);
+    db.notifications.unshift({
+      id: `notif_${Date.now()}_${Math.random().toString(36).substring(2, 6)}`,
+      idempotencyKey: `listing_created_${newListing.id}`,
+      to: supplierCompany?.contactEmail || "surplus@apexaero.example.com",
+      from: "induscycle@gmail.com",
+      subject: `Material Listing Published: ${newListing.title}`,
+      title: "Material Listing Published",
+      message: `Your surplus listing "${newListing.title}" (${newListing.totalQuantity} ${newListing.quantityUnit}) is now active on the exchange.`,
+      link: `/marketplace`,
+      read: false,
+      userId: newListing.supplierUserId,
+      eventType: "admin_alert",
+      referenceId: newListing.id,
+      status: "sent",
+      sentAt: now,
+      metadata: { listingId: newListing.id, userId: newListing.supplierUserId },
+    });
+
     db.auditLogs.unshift({
       id: `log_${Date.now()}`,
       userId: newListing.supplierUserId,
@@ -242,6 +264,40 @@ export async function POST(req: NextRequest) {
     });
 
     saveDatabase(db);
+
+    // Asynchronously synchronize listing to Supabase if table exists
+    if (isSupabaseConfigured()) {
+      Promise.resolve(
+        supabase.from("listings").insert({
+          id: newListing.id,
+          supplier_company_id: newListing.supplierCompanyId,
+          supplier_user_id: newListing.supplierUserId,
+          title: newListing.title,
+          material_name: newListing.materialName,
+          material_category: newListing.materialCategory,
+          source_industry: newListing.sourceIndustry,
+          manufacturing_process: newListing.manufacturingProcess,
+          description: newListing.description,
+          listing_type: newListing.listingType,
+          grade: newListing.grade,
+          dimensions: newListing.dimensions,
+          total_quantity: newListing.totalQuantity,
+          quantity_unit: newListing.quantityUnit,
+          min_order_quantity: newListing.minOrderQuantity,
+          price_per_unit: newListing.pricePerUnit,
+          currency: newListing.currency,
+          city: newListing.city,
+          state: newListing.state,
+          industrial_area: newListing.industrialArea,
+          status: newListing.status,
+          images: newListing.images,
+        })
+      )
+        .then(({ error }: any) => {
+          if (error) console.warn("Supabase listings sync notice:", error.message);
+        })
+        .catch((e: any) => console.warn("Supabase listing sync error:", e));
+    }
 
     return NextResponse.json({
       success: true,

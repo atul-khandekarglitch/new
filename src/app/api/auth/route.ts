@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { Company, User } from "@/types";
+import { syncUserToSupabase } from "@/lib/supabaseDb";
+import { notifyUserRegistration } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -118,10 +120,85 @@ export async function POST(req: NextRequest) {
 
       saveDatabase(db);
 
+      // Trigger automatic welcome email notification (non-blocking)
+      notifyUserRegistration(newUser, newCompany).catch((e) => console.warn("Registration email notification notice:", e));
+
+      // Async sync to Supabase if schema is ready
+      syncUserToSupabase(newUser, newCompany).catch((e) => console.warn("Supabase user sync notice:", e));
+
       return NextResponse.json({
         success: true,
         user: newUser,
         company: newCompany,
+      });
+    }
+
+    if (action === "google_sync") {
+      const { email, name, role = "buyer", avatar, supabaseId } = body;
+      if (!email) {
+        return NextResponse.json({ success: false, error: "Email is required for Google authentication" }, { status: 400 });
+      }
+
+      // Check for existing user with this email
+      let user = db.users.find((u) => u.email.toLowerCase() === email.toLowerCase());
+      let company: Company | undefined;
+
+      if (user) {
+        company = db.companies.find((c) => c.id === user!.companyId);
+      } else {
+        const newCompanyId = `comp_${Date.now()}`;
+        const newUserId = supabaseId || `user_${Date.now()}`;
+        const now = new Date().toISOString();
+
+        company = {
+          id: newCompanyId,
+          name: `${name}'s Industrial Org`,
+          industry: "Industrial Manufacturing",
+          city: "Pune",
+          state: "Maharashtra",
+          country: "India",
+          industrialArea: "Industrial Zone",
+          privacyLevel: "public",
+          verified: true,
+          contactEmail: email,
+          capabilities: [],
+          description: `Authenticated via Google OAuth on Induscycle.`,
+        };
+
+        user = {
+          id: newUserId,
+          name: name || email.split("@")[0],
+          email: email,
+          role: role,
+          companyId: newCompanyId,
+          avatar: avatar || undefined,
+          createdAt: now,
+        };
+
+        db.companies.push(company);
+        db.users.push(user);
+
+        db.auditLogs.unshift({
+          id: `log_${Date.now()}`,
+          userId: newUserId,
+          action: "GOOGLE_OAUTH_LOGIN",
+          details: `Google authentication for ${name} (${email}) as ${role}`,
+          timestamp: now,
+        });
+
+        saveDatabase(db);
+
+        // Trigger automatic welcome email notification (non-blocking)
+        notifyUserRegistration(user, company).catch((e) => console.warn("Google OAuth email notification notice:", e));
+
+        // Async sync to Supabase if schema is ready
+        syncUserToSupabase(user, company).catch((e) => console.warn("Supabase user sync notice:", e));
+      }
+
+      return NextResponse.json({
+        success: true,
+        user,
+        company,
       });
     }
 

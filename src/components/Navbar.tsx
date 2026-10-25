@@ -19,8 +19,10 @@ import {
   LogOut,
   MapPin,
   FileText,
-  CreditCard
+  CreditCard,
+  Loader2
 } from "lucide-react";
+import NotificationCenter from "./NotificationCenter";
 
 interface NavbarProps {
   transparent?: boolean;
@@ -28,7 +30,58 @@ interface NavbarProps {
 
 export default function Navbar({ transparent = false }: NavbarProps) {
   const pathname = usePathname();
-  const { user, company, loginAs, setSwitchRoleModalOpen, logout } = useAuth();
+  const { 
+    user, 
+    company, 
+    loginAs, 
+    setSwitchRoleModalOpen, 
+    logout,
+    isRoleTransitioning,
+    targetRole,
+    roleTransitionError,
+    clearRoleTransitionError
+  } = useAuth();
+
+  const buyerBtnRef = React.useRef<HTMLButtonElement>(null);
+  const sellerBtnRef = React.useRef<HTMLButtonElement>(null);
+  const bothBtnRef = React.useRef<HTMLButtonElement>(null);
+  const [indicatorPos, setIndicatorPos] = useState<{ left: number; width: number }>({ left: 4, width: 92 });
+
+  const currentRole = user?.role || "buyer";
+  const activeRole = isRoleTransitioning && targetRole ? targetRole : currentRole;
+
+  React.useEffect(() => {
+    const updatePos = () => {
+      let targetEl: HTMLButtonElement | null = null;
+      if (activeRole === "buyer") targetEl = buyerBtnRef.current;
+      else if (activeRole === "seller") targetEl = sellerBtnRef.current;
+      else if (activeRole === "both") targetEl = bothBtnRef.current;
+
+      if (targetEl) {
+        setIndicatorPos({
+          left: targetEl.offsetLeft,
+          width: targetEl.offsetWidth,
+        });
+      }
+    };
+
+    updatePos();
+    const timer = setTimeout(updatePos, 40);
+    window.addEventListener("resize", updatePos);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", updatePos);
+    };
+  }, [activeRole]);
+
+  React.useEffect(() => {
+    if (roleTransitionError) {
+      const timer = setTimeout(() => {
+        clearRoleTransitionError();
+      }, 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [roleTransitionError, clearRoleTransitionError]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
 
@@ -201,40 +254,85 @@ export default function Navbar({ transparent = false }: NavbarProps) {
 
           {/* Right Action Buttons */}
           <div className="hidden lg:flex items-center space-x-3">
-            {/* Quick Role Switcher Pill */}
-            <div className="flex items-center bg-white/10 rounded-full p-1 border border-white/15">
-              <button
-                onClick={() => loginAs("buyer")}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  user?.role === "buyer"
-                    ? "bg-brand-blue text-white shadow-sm"
-                    : "text-slate-300 hover:text-white"
+            {/* Quick Role Switcher Pill with Smooth Sliding Highlight */}
+            <div 
+              className="relative flex items-center bg-white/10 rounded-full p-1 border border-white/15"
+              role="radiogroup"
+              aria-label="User Mode Selector"
+            >
+              {/* Sliding background highlight pill */}
+              <div
+                className={`role-indicator-pill absolute top-1 bottom-1 rounded-full transition-all duration-300 ease-out shadow-sm pointer-events-none motion-reduce:transition-none ${
+                  activeRole === "seller"
+                    ? "bg-brand-purple"
+                    : activeRole === "both"
+                    ? "bg-emerald-600"
+                    : "bg-brand-blue"
                 }`}
+                style={{
+                  left: `${indicatorPos.left}px`,
+                  width: `${indicatorPos.width}px`,
+                }}
+              />
+
+              <button
+                ref={buyerBtnRef}
+                type="button"
+                role="radio"
+                aria-checked={activeRole === "buyer"}
+                disabled={isRoleTransitioning}
+                onClick={() => loginAs("buyer")}
+                className={`relative z-10 px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
+                  activeRole === "buyer"
+                    ? "text-white"
+                    : "text-slate-300 hover:text-white"
+                } disabled:cursor-not-allowed`}
                 title="Switch to Buyer view (Rajesh Sharma)"
               >
-                Buyer Mode
+                {isRoleTransitioning && targetRole === "buyer" && (
+                  <Loader2 className="w-3 h-3 animate-spin text-white" />
+                )}
+                <span>Buyer Mode</span>
               </button>
+
               <button
+                ref={sellerBtnRef}
+                type="button"
+                role="radio"
+                aria-checked={activeRole === "seller"}
+                disabled={isRoleTransitioning}
                 onClick={() => loginAs("seller")}
-                className={`px-3 py-1 rounded-full text-xs font-semibold transition-all ${
-                  user?.role === "seller"
-                    ? "bg-brand-purple text-white shadow-sm"
+                className={`relative z-10 px-3 py-1 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
+                  activeRole === "seller"
+                    ? "text-white"
                     : "text-slate-300 hover:text-white"
-                }`}
+                } disabled:cursor-not-allowed`}
                 title="Switch to Seller view (Anand Verma)"
               >
-                Seller Mode
+                {isRoleTransitioning && targetRole === "seller" && (
+                  <Loader2 className="w-3 h-3 animate-spin text-white" />
+                )}
+                <span>Seller Mode</span>
               </button>
+
               <button
+                ref={bothBtnRef}
+                type="button"
+                role="radio"
+                aria-checked={activeRole === "both"}
+                disabled={isRoleTransitioning}
                 onClick={() => loginAs("both")}
-                className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
-                  user?.role === "both"
-                    ? "bg-emerald-600 text-white shadow-sm"
+                className={`relative z-10 px-2.5 py-1 rounded-full text-xs font-semibold transition-colors duration-200 flex items-center gap-1.5 ${
+                  activeRole === "both"
+                    ? "text-white"
                     : "text-slate-300 hover:text-white"
-                }`}
+                } disabled:cursor-not-allowed`}
                 title="Switch to Combined Dual Role (Vikram Patel)"
               >
-                Dual
+                {isRoleTransitioning && targetRole === "both" && (
+                  <Loader2 className="w-3 h-3 animate-spin text-white" />
+                )}
+                <span>Dual</span>
               </button>
             </div>
 
@@ -254,6 +352,9 @@ export default function Navbar({ transparent = false }: NavbarProps) {
             >
               Join Induscycle
             </Link>
+
+            {/* Notification Center */}
+            <NotificationCenter />
 
             {/* User Profile / Dashboard Menu */}
             {user ? (
@@ -354,10 +455,14 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           <div className="flex items-center lg:hidden gap-2">
             <button
               onClick={() => loginAs(user?.role === "buyer" ? "seller" : "buyer")}
-              className="px-2.5 py-1 text-xs rounded bg-white/10 text-white font-medium"
+              disabled={isRoleTransitioning}
+              className="px-2.5 py-1 text-xs rounded bg-white/10 text-white font-medium flex items-center gap-1.5 transition-all disabled:opacity-75"
+              title={`Switch to ${user?.role === "buyer" ? "Seller" : "Buyer"} Mode`}
             >
-              {user?.role === "buyer" ? "Buyer" : "Seller"}
+              {isRoleTransitioning && <Loader2 className="w-3 h-3 animate-spin text-white" />}
+              <span>{user?.role === "buyer" ? "Buyer" : "Seller"}</span>
             </button>
+            <NotificationCenter isMobile />
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
               className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-white/10 focus:outline-none"
@@ -434,6 +539,23 @@ export default function Navbar({ transparent = false }: NavbarProps) {
           >
             Go to {user?.role === "seller" ? "Seller" : "Buyer"} Dashboard
           </Link>
+        </div>
+      )}
+
+      {/* Role Transition Error Notification Toast */}
+      {roleTransitionError && (
+        <div className="fixed top-24 right-4 z-50 max-w-sm p-3.5 rounded-xl bg-rose-900/95 border border-rose-500/50 text-white shadow-xl flex items-center justify-between gap-3 animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-rose-400 animate-ping"></span>
+            <p className="text-xs text-rose-100">{roleTransitionError}</p>
+          </div>
+          <button
+            onClick={clearRoleTransitionError}
+            className="text-xs text-rose-300 hover:text-white p-1"
+            title="Dismiss error"
+          >
+            ✕
+          </button>
         </div>
       )}
     </header>

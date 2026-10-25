@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { Shipment, ShipmentStageNumber } from "@/types";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { notifyShipmentProgression } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -78,6 +80,34 @@ export async function POST(req: NextRequest) {
 
     db.shipments.unshift(newShipment);
     saveDatabase(db);
+
+    // Automatic notification for consignment dispatch manifest
+    notifyShipmentProgression(newShipment, {
+      stage: 1,
+      stageName: "Awaiting collection",
+      location: newShipment.origin,
+    }).catch((e) => console.warn("Shipment creation email notice:", e));
+
+    // Asynchronously synchronize shipment to Supabase if table exists
+    if (isSupabaseConfigured()) {
+      Promise.resolve(
+        supabase.from("shipments").insert({
+          id: newShipment.id,
+          tracking_number: newShipment.trackingNumber,
+          listing_id: newShipment.listingId,
+          supplier_company_id: newShipment.supplierCompanyId,
+          buyer_company_id: newShipment.buyerCompanyId,
+          current_stage: newShipment.currentStage,
+          transporter: newShipment.carrierName,
+          driver: newShipment.driverContact,
+          vehicle_number: newShipment.vehicleNumber,
+        })
+      )
+        .then(({ error }: any) => {
+          if (error) console.warn("Supabase shipments sync notice:", error.message);
+        })
+        .catch((e: any) => console.warn("Supabase shipments sync error:", e));
+    }
 
     return NextResponse.json({ success: true, shipment: newShipment });
   } catch (error) {

@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { Order, OrderItem } from "@/types";
+import { supabase, isSupabaseConfigured } from "@/lib/supabase";
+import { notifyOrderPlaced } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -136,6 +138,30 @@ export async function POST(req: NextRequest) {
     });
 
     saveDatabase(db);
+
+    // Automatic email notification to Buyer & Supplier (non-blocking)
+    notifyOrderPlaced(newOrder, listing.title).catch((e) => console.warn("Order email notification notice:", e));
+
+    // Asynchronously synchronize order to Supabase if table exists
+    if (isSupabaseConfigured()) {
+      Promise.resolve(
+        supabase.from("orders").insert({
+          id: newOrder.id,
+          order_number: newOrder.id,
+          buyer_user_id: newOrder.buyerId,
+          supplier_user_id: newOrder.sellerId,
+          listing_id: newOrder.listingId,
+          total_amount: newOrder.totalAmount,
+          currency: newOrder.currency,
+          status: newOrder.status,
+          payment_status: "pending",
+        })
+      )
+        .then(({ error }: any) => {
+          if (error) console.warn("Supabase orders sync notice:", error.message);
+        })
+        .catch((e: any) => console.warn("Supabase orders sync error:", e));
+    }
 
     return NextResponse.json({
       success: true,

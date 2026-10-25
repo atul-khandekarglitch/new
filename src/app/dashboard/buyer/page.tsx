@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import Navbar from "@/components/Navbar";
 import AuthModal from "@/components/AuthModal";
+import RoleTransitionWrapper from "@/components/RoleTransitionWrapper";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
 import { MaterialListing, Shipment, EnquiryOffer, Order } from "@/types";
 import { 
@@ -26,7 +28,8 @@ import {
 } from "lucide-react";
 
 export default function BuyerDashboardPage() {
-  const { user, company, loginAs } = useAuth();
+  const { user, company, loginAs, isRoleTransitioning } = useAuth();
+  const router = useRouter();
   
   const [recommendations, setRecommendations] = useState<MaterialListing[]>([]);
   const [activeShipment, setActiveShipment] = useState<Shipment | null>(null);
@@ -35,8 +38,12 @@ export default function BuyerDashboardPage() {
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // If not logged in as buyer or both, switch
-    if (user && user.role !== "buyer" && user.role !== "both") {
+    // If switched to seller, navigate smoothly to seller dashboard
+    if (user && user.role === "seller" && !isRoleTransitioning) {
+      router.push("/dashboard/seller");
+      return;
+    }
+    if (!user) {
       loginAs("buyer");
     }
 
@@ -69,6 +76,7 @@ export default function BuyerDashboardPage() {
       <Navbar />
       <AuthModal />
 
+      <RoleTransitionWrapper className="flex-1 flex flex-col">
       {/* Dashboard Header Bar */}
       <div className="bg-navy-950 text-white py-8 border-b border-navy-800">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -336,6 +344,7 @@ export default function BuyerDashboardPage() {
         </div>
 
       </main>
+      </RoleTransitionWrapper>
 
     </div>
   );

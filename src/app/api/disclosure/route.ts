@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getDatabase, saveDatabase } from "@/lib/db";
 import { DisclosureRequest } from "@/types";
+import { notifyDisclosureRequestCreated, notifyDisclosureRequestStatusChanged } from "@/lib/email";
 
 export async function GET(req: NextRequest) {
   try {
@@ -54,6 +55,9 @@ export async function POST(req: NextRequest) {
 
     saveDatabase(db);
 
+    // Automatic notification to Target Supplier (non-blocking)
+    notifyDisclosureRequestCreated(newRequest).catch((e) => console.warn("Disclosure request email notice:", e));
+
     return NextResponse.json({ success: true, request: newRequest });
   } catch (error) {
     console.error("POST /api/disclosure error:", error);
@@ -84,6 +88,9 @@ export async function PUT(req: NextRequest) {
     });
 
     saveDatabase(db);
+
+    // Automatic notification to Requester on status change (non-blocking)
+    notifyDisclosureRequestStatusChanged(db.disclosureRequests[index], status).catch((e) => console.warn("Disclosure status email notice:", e));
 
     return NextResponse.json({ success: true, request: db.disclosureRequests[index] });
   } catch (error) {
